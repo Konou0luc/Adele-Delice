@@ -1,26 +1,37 @@
 import Link from 'next/link';
+import type { Dish } from '@/lib/api';
 
-const Menu = () => {
-  const menuItems = [
-    {
-      image: "/Plats/IMG_20260628_185117968_AE.webp",
-      name: "Plat du Jour",
-      description: "Plat frais préparé chaque jour avec les ingrédients du marché.",
-      price: "15 000 FCFA"
-    },
-    {
-      image: "/Plats/IMG_20260628_215543957_AE.webp",
-      name: "Poulet Yassa",
-      description: "Poulet mariné au citron, oignons et épices sénégalaises.",
-      price: "18 000 FCFA"
-    },
-    {
-      image: "/Plats/IMG_20260602_155913180_AE.webp",
-      name: "Thieboudienne",
-      description: "Plat traditionnel sénégalais avec du poisson et du riz.",
-      price: "20 000 FCFA"
-    }
-  ];
+const Menu = ({ dishes }: { dishes: Dish[] }) => {
+  const featuredDishes = dishes.slice(0, 3);
+
+  // Fallback to static data if no dishes from API
+  const menuItems = featuredDishes.length > 0 
+    ? featuredDishes.map(dish => ({
+        image: dish.images[0] || "/placeholder-image.webp",
+        name: dish.name,
+        description: dish.description || "",
+        price: `${dish.price.toLocaleString()} FCFA`
+      }))
+    : [
+        {
+          image: "/Plats/IMG_20260628_185117968_AE.webp",
+          name: "Plat du Jour",
+          description: "Plat frais préparé chaque jour avec les ingrédients du marché.",
+          price: "15 000 FCFA"
+        },
+        {
+          image: "/Plats/IMG_20260628_215543957_AE.webp",
+          name: "Poulet Yassa",
+          description: "Poulet mariné au citron, oignons et épices sénégalaises.",
+          price: "18 000 FCFA"
+        },
+        {
+          image: "/Plats/IMG_20260602_155913180_AE.webp",
+          name: "Thieboudienne",
+          description: "Plat traditionnel sénégalais avec du poisson et du riz.",
+          price: "20 000 FCFA"
+        }
+      ];
 
   return (
     <section id="menu" className="py-24 bg-white">

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import type { GalleryItem } from '@/lib/api'
 
-// On regroupe toutes les images de la galerie (Gallery + Plats pour plus de contenu)
-const allGalleryImages = [
+const staticGalleryImages = [
   "/Gallery/sitting-table-with-chairs-yellow-sofa-restaurant-with-panoramic-view.webp",
   "/Gallery/fashionable-feminist-african-american-woman-wear-black-tshirt-shorts-posed-restaurant-eat-cheese-cake.webp",
   "/Gallery/interior-shot-cafe-with-chairs-near-bar-with-wooden-tables.webp",
@@ -19,16 +19,23 @@ const allGalleryImages = [
   "/Plats/IMG_20260606_170302427_AE.webp"
 ]
 
-const GalleryContent = () => {
-  const [visibleCount, setVisibleCount] = useState(8) // Afficher 8 photos initialement
-  const visibleImages = allGalleryImages.slice(0, visibleCount)
-  const hasMore = visibleCount < allGalleryImages.length
+interface GalleryContentProps {
+  galleryItems: GalleryItem[]
+}
+
+const GalleryContent = ({ galleryItems }: GalleryContentProps) => {
+  const allImages = galleryItems.length > 0 
+    ? galleryItems.map(item => item.imageUrl)
+    : staticGalleryImages
+
+  const [visibleCount, setVisibleCount] = useState(8)
+  const visibleImages = allImages.slice(0, visibleCount)
+  const hasMore = visibleCount < allImages.length
 
   const loadMore = () => {
-    setVisibleCount(prev => Math.min(prev + 4, allGalleryImages.length))
+    setVisibleCount(prev => Math.min(prev + 4, allImages.length))
   }
 
-  // Lightbox state
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
 
   const openLightbox = (index: number) => {
@@ -41,17 +48,16 @@ const GalleryContent = () => {
 
   const nextImage = () => {
     if (activeIndex !== null) {
-      setActiveIndex((activeIndex + 1) % allGalleryImages.length)
+      setActiveIndex((activeIndex + 1) % allImages.length)
     }
   }
 
   const prevImage = () => {
     if (activeIndex !== null) {
-      setActiveIndex((activeIndex - 1 + allGalleryImages.length) % allGalleryImages.length)
+      setActiveIndex((activeIndex - 1 + allImages.length) % allImages.length)
     }
   }
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeIndex === null) return
@@ -65,7 +71,6 @@ const GalleryContent = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [activeIndex])
 
-  // Prevent body scrolling when lightbox is open
   useEffect(() => {
     if (activeIndex !== null) {
       document.body.style.overflow = 'hidden'
@@ -103,13 +108,11 @@ const GalleryContent = () => {
         </div>
       )}
 
-      {/* Lightbox Modal */}
       {activeIndex !== null && (
         <div 
           className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
           onClick={closeLightbox}
         >
-          {/* Close Button */}
           <button 
             onClick={closeLightbox}
             className="absolute top-6 right-6 text-white text-3xl hover:text-gray-300 transition-colors z-10"
@@ -117,7 +120,6 @@ const GalleryContent = () => {
             <FaTimes />
           </button>
 
-          {/* Previous Button */}
           <button 
             onClick={(e) => {
               e.stopPropagation()
@@ -128,7 +130,6 @@ const GalleryContent = () => {
             <FaChevronLeft />
           </button>
 
-          {/* Next Button */}
           <button 
             onClick={(e) => {
               e.stopPropagation()
@@ -139,17 +140,15 @@ const GalleryContent = () => {
             <FaChevronRight />
           </button>
 
-          {/* Image */}
           <img 
-            src={allGalleryImages[activeIndex]} 
+            src={allImages[activeIndex]} 
             alt={`Galerie ${activeIndex + 1}`}
             className="max-w-full max-h-[90vh] object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
 
-          {/* Image Counter */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-lg">
-            {activeIndex + 1} / {allGalleryImages.length}
+            {activeIndex + 1} / {allImages.length}
           </div>
         </div>
       )}

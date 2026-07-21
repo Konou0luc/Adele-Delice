@@ -1,7 +1,7 @@
 'use client'
 
 import { FaSearch, FaUtensils, FaCalendarAlt, FaThList } from 'react-icons/fa'
-import { menuData } from './menuData'
+import type { Category } from '@/lib/api'
 
 interface FilterSidebarProps {
   activeTab: string
@@ -10,6 +10,7 @@ interface FilterSidebarProps {
   setActiveFilters: React.Dispatch<React.SetStateAction<string[]>>
   searchQuery: string
   setSearchQuery: (query: string) => void
+  categories: Category[]
 }
 
 const FilterSidebar = ({
@@ -18,7 +19,8 @@ const FilterSidebar = ({
   activeFilters,
   setActiveFilters,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  categories
 }: FilterSidebarProps) => {
 
   const tabs = [
@@ -82,7 +84,7 @@ const FilterSidebar = ({
         <div className="bg-white rounded-xl border border-[#EAEAEA] p-4">
           <label className="block text-sm font-semibold text-[#111111] mb-3">Catégories</label>
           <div className="flex flex-col gap-2">
-            {menuData.categories.map((category) => (
+            {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => toggleFilter(category.id)}
