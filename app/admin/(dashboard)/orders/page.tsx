@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { getOrders } from '@/lib/api';
 import type { Order, OrderStatus } from '@/lib/api';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { FaEye } from 'react-icons/fa';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 const STATUS_LABELS: Record<keyof OrderStatus, string> = {
   PENDING: 'En attente',
@@ -26,19 +29,26 @@ const STATUS_COLORS: Record<keyof OrderStatus, string> = {
 };
 
 export default function OrdersPage() {
+  const { data: session, status } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status !== 'authenticated') {
+      return;
+    }
+
     fetchOrders();
-  }, []);
+  }, [session, status]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const data = await getOrders();
+      const token = (session?.user as any)?.token;
+      const data = await getOrders(undefined, token);
       setOrders(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors du chargement des commandes.'));
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);

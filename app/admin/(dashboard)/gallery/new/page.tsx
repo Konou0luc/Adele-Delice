@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function NewGalleryPage() {
   const { data: session } = useSession();
@@ -27,8 +29,10 @@ export default function NewGalleryPage() {
     try {
       const token = (session?.user as any)?.token;
       await createGalleryItem({ ...formData, isActive: true, order: 0 }, token);
+      notify.success('Image ajoutée avec succès.');
       router.push('/admin/gallery');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement de l'image."));
       console.error('Error saving gallery item:', error);
     } finally {
       setIsSaving(false);

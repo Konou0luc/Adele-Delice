@@ -4,7 +4,9 @@ import { getGalleryItems, deleteGalleryItem } from '@/lib/api';
 import type { GalleryItem } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function GalleryPage() {
   const { data: session } = useSession();
@@ -22,6 +24,7 @@ export default function GalleryPage() {
       const data = await getGalleryItems();
       setItems(data.sort((a, b) => (b.order || 0) - (a.order || 0)));
     } catch (error) {
+      notify.error('Erreur lors du chargement de la galerie.');
       console.error('Error fetching gallery items:', error);
     } finally {
       setLoading(false);
@@ -34,8 +37,10 @@ export default function GalleryPage() {
     try {
       const token = (session?.user as any)?.token;
       await deleteGalleryItem(id, token);
-      fetchGalleryItems();
+      await fetchGalleryItems();
+      notify.success('Image supprimée avec succès.');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de la suppression de l'image."));
       console.error('Error deleting gallery item:', error);
     } finally {
       setIsDeleting(null);
@@ -76,6 +81,12 @@ export default function GalleryPage() {
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Link
+                  href={`/admin/gallery/${item.id}`}
+                  className="p-2 bg-white text-[#111111] rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <FaEye />
+                </Link>
                 <Link
                   href={`/admin/gallery/${item.id}/edit`}
                   className="p-2 bg-white text-[#111111] rounded-lg hover:bg-gray-100 transition-colors"

@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import MultiImageUpload from '@/components/admin/MultiImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function NewDishPage() {
   const { data: session } = useSession();
@@ -38,6 +40,7 @@ export default function NewDishPage() {
       const data = await getCategories();
       setCategories(data);
     } catch (error) {
+      notify.error('Erreur lors du chargement des catégories.');
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
@@ -61,8 +64,10 @@ export default function NewDishPage() {
         allergens: formData.allergens.split(',').map(a => a.trim()).filter(a => a)
       };
       await createDish({ ...dishData, orderCount: 0 }, token);
+      notify.success('Plat créé avec succès.');
       router.push('/admin/dishes');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement du plat."));
       console.error('Error saving dish:', error);
     } finally {
       setIsSaving(false);

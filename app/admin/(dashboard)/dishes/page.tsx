@@ -4,7 +4,9 @@ import { getDishes, getCategories, deleteDish } from '@/lib/api';
 import type { Dish, Category } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function DishesPage() {
   const { data: session } = useSession();
@@ -27,6 +29,7 @@ export default function DishesPage() {
       setDishes(dishesData);
       setCategories(categoriesData);
     } catch (error) {
+      notify.error('Erreur lors du chargement des plats.');
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -39,8 +42,10 @@ export default function DishesPage() {
     try {
       const token = (session?.user as any)?.token;
       await deleteDish(id, token);
-      fetchData();
+      await fetchData();
+      notify.success('Plat supprimé avec succès.');
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors de la suppression du plat.'));
       console.error('Error deleting dish:', error);
     } finally {
       setIsDeleting(null);
@@ -126,6 +131,12 @@ export default function DishesPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/admin/dishes/${dish.id}`}
+                        className="p-2 text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] rounded-lg transition-colors"
+                      >
+                        <FaEye />
+                      </Link>
                       <Link
                         href={`/admin/dishes/${dish.id}/edit`}
                         className="p-2 text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] rounded-lg transition-colors"

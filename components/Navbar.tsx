@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 import { FaUser } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { status } = useSession();
+  const isAuthenticated = status === 'authenticated';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +21,7 @@ const Navbar = () => {
   }, []);
 
   const isHome = pathname === '/';
+  const accountHref = isAuthenticated ? '/account' : '/login';
 
   const navLinks = [
     { name: "Accueil", href: "/" },
@@ -52,11 +56,20 @@ const Navbar = () => {
               </Link>
             ))}
             <Link 
-              href="/account"
+              href={accountHref}
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${(!isHome || scrolled) ? 'bg-[#F7F6F3] text-[#111111] hover:bg-gray-200' : 'bg-white/20 text-white hover:bg-white/30'}`}
             >
               <FaUser />
             </Link>
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className={`text-sm font-semibold transition-colors ${(!isHome || scrolled) ? 'text-[#111111] hover:text-gray-600' : 'text-white hover:text-white/80'}`}
+              >
+                Déconnexion
+              </button>
+            )}
             <Link 
               href={isHome ? "#reservation" : "/#reservation"} 
               className={`px-6 py-2 rounded-lg font-semibold transition-colors ${(!isHome || scrolled) ? 'bg-[#111111] text-white hover:bg-[#333333]' : 'bg-white text-[#111111] hover:bg-gray-100'}`}
@@ -94,13 +107,25 @@ const Navbar = () => {
               </Link>
             ))}
             <Link 
-              href="/account"
+              href={accountHref}
               className="flex items-center gap-3 px-4 py-3 text-[#111111] font-medium hover:bg-gray-100 rounded-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               <FaUser />
-              Mon Compte
+              {isAuthenticated ? 'Mon compte' : 'Se connecter'}
             </Link>
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  signOut({ callbackUrl: '/' });
+                }}
+                className="w-full text-left px-4 py-3 text-[#111111] font-medium hover:bg-gray-100 rounded-lg"
+              >
+                Se déconnecter
+              </button>
+            )}
             <Link 
               href={isHome ? "#reservation" : "/#reservation"} 
               className="block mx-4 mt-2 px-4 py-3 bg-[#111111] text-white text-center font-semibold rounded-lg"

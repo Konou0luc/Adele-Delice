@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { getOrder, updateOrder } from '@/lib/api';
 import type { Order, OrderStatus } from '@/lib/api';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { FaArrowLeft } from 'react-icons/fa';
+import { useParams } from 'next/navigation';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 const STATUS_LABELS: Record<keyof OrderStatus, string> = {
   PENDING: 'En attente',
@@ -18,24 +19,29 @@ const STATUS_LABELS: Record<keyof OrderStatus, string> = {
 };
 
 export default function OrderDetailPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
+    if (status !== 'authenticated') {
+      return;
+    }
+
     fetchOrder();
-  }, [id]);
+  }, [id, session, status]);
 
   const fetchOrder = async () => {
     try {
       setLoading(true);
-      const data = await getOrder(id);
+      const token = (session?.user as any)?.token;
+      const data = await getOrder(id, token);
       setOrder(data);
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors du chargement de la commande.'));
       console.error('Error fetching order:', error);
     } finally {
       setLoading(false);
@@ -49,7 +55,9 @@ export default function OrderDetailPage() {
       const token = (session?.user as any)?.token;
       await updateOrder(id, { status: newStatus }, token);
       await fetchOrder();
+      notify.success('Statut de la commande mis à jour.');
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors de la mise à jour de la commande.'));
       console.error('Error updating order:', error);
     } finally {
       setUpdating(false);
@@ -74,23 +82,29 @@ export default function OrderDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/orders" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <FaArrowLeft />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-[#111111]">Commande #{order.orderNumber}</h1>
-          <p className="text-[#787774] mt-2">
-            {new Date(order.createdAt).toLocaleDateString('fr-FR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader
+        backHref="/admin/orders"
+        breadcrumb="Commandes"
+        title={`Commande #${order.orderNumber}`}
+        description={new Date(order.createdAt).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+        meta={[
+          <span key="status" className="px-3 py-1 text-xs rounded-full bg-[#111111] text-white">
+            {STATUS_LABELS[order.status]}
+          </span>,
+          <span key="total" className="px-3 py-1 text-xs rounded-full bg-[#F7F6F3] text-[#111111]">
+            {order.totalAmount} FCFA
+          </span>,
+          <span key="items" className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
+            {order.orderItems?.length || 0} article{order.orderItems && order.orderItems.length > 1 ? 's' : ''}
+          </span>,
+        ]}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">

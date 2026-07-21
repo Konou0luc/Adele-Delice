@@ -22,3 +22,26 @@ body {
   background: var(--background);
   font-family: var(--font-montserrat), sans-serif;
 }
+
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  color: #111111;
+  background-color: #ffffff;
+  caret-color: #111111;
+}
+
+.admin-shell input::placeholder,
+.admin-shell textarea::placeholder {
+  color: #9ca3af;
+}
+
+.admin-shell input:-webkit-autofill,
+.admin-shell input:-webkit-autofill:hover,
+.admin-shell input:-webkit-autofill:focus,
+.admin-shell textarea:-webkit-autofill,
+.admin-shell select:-webkit-autofill {
+  -webkit-text-fill-color: #111111 !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { getReservations, updateReservation } from '@/lib/api';
 import type { Reservation, ReservationStatus } from '@/lib/api';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
+import { FaEye } from 'react-icons/fa';
 
 const STATUS_LABELS: Record<keyof ReservationStatus, string> = {
   PENDING: 'En attente',
@@ -19,21 +23,27 @@ const STATUS_COLORS: Record<keyof ReservationStatus, string> = {
 };
 
 export default function ReservationsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
+    if (status !== 'authenticated') {
+      return;
+    }
+
     fetchReservations();
-  }, []);
+  }, [session, status]);
 
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      const data = await getReservations();
+      const token = (session?.user as any)?.token;
+      const data = await getReservations(token);
       setReservations(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors du chargement des réservations.'));
       console.error('Error fetching reservations:', error);
     } finally {
       setLoading(false);
@@ -45,8 +55,10 @@ export default function ReservationsPage() {
     try {
       const token = (session?.user as any)?.token;
       await updateReservation(reservation.id, { status: newStatus }, token);
-      fetchReservations();
+      await fetchReservations();
+      notify.success('Statut de la réservation mis à jour.');
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors de la mise à jour de la réservation.'));
       console.error('Error updating reservation:', error);
     } finally {
       setUpdating(null);
@@ -105,7 +117,14 @@ export default function ReservationsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/admin/reservations/${reservation.id}`}
+                        className="p-2 text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] rounded-lg transition-colors"
+                        aria-label="Voir le détail"
+                      >
+                        <FaEye />
+                      </Link>
                       {Object.keys(STATUS_LABELS).map((status) => (
                         <button
                           key={status}

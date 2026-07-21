@@ -1,77 +1,66 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+export { login } from "./auth";
+import { request } from "./request";
 
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
-
-interface FetchOptions {
-  method?: HttpMethod;
-  body?: Record<string, any>;
-  token?: string;
+interface QueryValue {
+  [key: string]: string | number | boolean | undefined;
 }
 
-async function apiFetch<T>(
+function withQuery(
   endpoint: string,
-  options: FetchOptions = {}
-): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (options.token) {
-    headers["Authorization"] = `Bearer ${options.token}`;
+  params?: QueryValue
+) {
+  if (!params) {
+    return endpoint;
   }
 
-  const config: RequestInit = {
-    method: options.method || "GET",
-    headers,
-  };
+  const searchParams = new URLSearchParams();
 
-  if (options.body) {
-    config.body = JSON.stringify(options.body);
-  }
-
-  try {
-    const response = await fetch(url, config);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
-        message: "Une erreur est survenue",
-      }));
-      throw new Error(errorData.message || `HTTP ${response.status}`);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("API request error:", error);
-    throw error;
-  }
-}
-
-// Upload
-export const uploadImage = async (file: File, token?: string): Promise<{ success: boolean; url: string; publicId: string }> => {
-  const url = `${API_BASE_URL}/api/upload`;
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers,
-    body: formData,
   });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({
-      message: "Une erreur est survenue lors de l'upload",
-    }));
-    throw new Error(errorData.message || `HTTP ${response.status}`);
-  }
+  const queryString = searchParams.toString();
 
-  return await response.json();
+  return queryString ? `${endpoint}?${queryString}` : endpoint;
+}
+
+export interface UploadImageResponse {
+  success: boolean;
+  url: string;
+  publicId: string;
+}
+
+export interface MenuPayload {
+  name: string;
+  description?: string;
+  type: keyof MenuType;
+  date?: string;
+  dayOfWeek?: number;
+  startDate?: string;
+  endDate?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  menuItems?: {
+    dishId: string;
+    price?: number;
+    quantity?: number;
+  }[];
+}
+
+export const uploadImage = async (
+  file: File,
+  token?: string
+): Promise<UploadImageResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return request<UploadImageResponse>("/api/upload", {
+    method: "POST",
+    body: formData,
+    token,
+  });
 };
 
 // --- API Functions ---
@@ -91,17 +80,7 @@ export const getDishes = (params?: {
   categoryId?: string;
   isPromoted?: boolean;
   isNew?: boolean;
-}) => {
-  const searchParams = new URLSearchParams();
-  if (params?.categoryId) searchParams.set("categoryId", params.categoryId);
-  if (params?.isPromoted !== undefined)
-    searchParams.set("isPromoted", String(params.isPromoted));
-  if (params?.isNew !== undefined)
-    searchParams.set("isNew", String(params.isNew));
-
-  const queryString = searchParams.toString();
-  return apiFetch<Dish[]>(`/api/dishes${queryString ? `?${queryString}` : ""}`);
-};
+}) => apiFetch<Dish[]>(withQuery("/api/dishes", params));
 export const createDish = (data: Partial<Dish>, token?: string) =>
   apiFetch<Dish>("/api/dishes", { method: "POST", body: data, token });
 export const updateDish = (id: string, data: Partial<Dish>, token?: string) =>
@@ -111,31 +90,23 @@ export const deleteDish = (id: string, token?: string) =>
 export const getDish = (id: string) => apiFetch<Dish>(`/api/dishes/${id}`);
 
 // Menus
-export const getMenus = (params?: { type?: "DAILY" | "WEEKLY" | "SPECIAL" }) => {
-  const searchParams = new URLSearchParams();
-  if (params?.type) searchParams.set("type", params.type);
-
-  const queryString = searchParams.toString();
-  return apiFetch<Menu[]>(`/api/menus${queryString ? `?${queryString}` : ""}`);
-};
-export const createMenu = (data: Partial<Menu>, token?: string) =>
+export const getMenus = (params?: {
+  type?: "DAILY" | "WEEKLY" | "SPECIAL";
+  includeInactive?: boolean;
+}, token?: string) =>
+  apiFetch<Menu[]>(withQuery("/api/menus", params), { token });
+export const createMenu = (data: MenuPayload, token?: string) =>
   apiFetch<Menu>("/api/menus", { method: "POST", body: data, token });
-export const updateMenu = (id: string, data: Partial<Menu>, token?: string) =>
+export const updateMenu = (id: string, data: MenuPayload, token?: string) =>
   apiFetch<Menu>(`/api/menus/${id}`, { method: "PUT", body: data, token });
 export const deleteMenu = (id: string, token?: string) =>
   apiFetch<void>(`/api/menus/${id}`, { method: "DELETE", token });
-export const getMenu = (id: string) => apiFetch<Menu>(`/api/menus/${id}`);
+export const getMenu = (id: string, token?: string) =>
+  apiFetch<Menu>(`/api/menus/${id}`, { token });
 
 // Gallery
-export const getGalleryItems = (params?: { category?: string }) => {
-  const searchParams = new URLSearchParams();
-  if (params?.category) searchParams.set("category", params.category);
-
-  const queryString = searchParams.toString();
-  return apiFetch<GalleryItem[]>(
-    `/api/gallery-items${queryString ? `?${queryString}` : ""}`
-  );
-};
+export const getGalleryItems = (params?: { category?: string }) =>
+  apiFetch<GalleryItem[]>(withQuery("/api/gallery-items", params));
 export const getGalleryItem = (id: string) => apiFetch<GalleryItem>(`/api/gallery-items/${id}`);
 export const createGalleryItem = (data: Partial<GalleryItem>, token?: string) =>
   apiFetch<GalleryItem>("/api/gallery-items", { method: "POST", body: data, token });
@@ -145,31 +116,39 @@ export const deleteGalleryItem = (id: string, token?: string) =>
   apiFetch<void>(`/api/gallery-items/${id}`, { method: "DELETE", token });
 
 // Orders
-export const getOrders = (params?: { orderNumber?: string }) => {
-  const searchParams = new URLSearchParams();
-  if (params?.orderNumber) searchParams.set("orderNumber", params.orderNumber);
-  const queryString = searchParams.toString();
-  return apiFetch<Order[]>(`/api/orders${queryString ? `?${queryString}` : ""}`);
-};
+export const getOrders = (
+  params?: { orderNumber?: string },
+  token?: string
+) => apiFetch<Order[]>(withQuery("/api/orders", params), { token });
 export const createOrder = (data: CreateOrderPayload) =>
   apiFetch<Order>("/api/orders", { method: "POST", body: data });
 export const updateOrder = (id: string, data: Partial<Order>, token?: string) =>
   apiFetch<Order>(`/api/orders/${id}`, { method: "PUT", body: data, token });
-export const getOrder = (id: string) => apiFetch<Order>(`/api/orders/${id}`);
+export const getOrder = (id: string, token?: string) =>
+  apiFetch<Order>(`/api/orders/${id}`, { token });
 
 // Reservations
-export const getReservations = () => apiFetch<Reservation[]>("/api/reservations");
+export const getReservations = (token?: string) =>
+  apiFetch<Reservation[]>("/api/reservations", { token });
+export const getReservation = (id: string, token?: string) =>
+  apiFetch<Reservation>(`/api/reservations/${id}`, { token });
 export const createReservation = (data: Partial<Reservation>) =>
   apiFetch<Reservation>("/api/reservations", { method: "POST", body: data });
 export const updateReservation = (id: string, data: Partial<Reservation>, token?: string) =>
   apiFetch<Reservation>(`/api/reservations/${id}`, { method: "PUT", body: data, token });
+export const deleteReservation = (id: string, token?: string) =>
+  apiFetch<void>(`/api/reservations/${id}`, { method: "DELETE", token });
 
-// Auth
-export const login = (data: { email: string; password: string }) =>
-  apiFetch<{ token: string; user: User }>("/api/login", {
-    method: "POST",
-    body: data,
-  });
+function apiFetch<T>(
+  endpoint: string,
+  options?: {
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    body?: unknown;
+    token?: string;
+  }
+) {
+  return request<T>(endpoint, options);
+}
 
 // --- Types ---
 
@@ -180,10 +159,12 @@ export interface Role {
 
 export interface User {
   id: string;
+  name?: string;
   email: string;
   firstName?: string;
   lastName?: string;
   phone?: string;
+  image?: string;
   role: Role;
   isActive: boolean;
   createdAt: string;

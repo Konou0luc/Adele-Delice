@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function NewCategoryPage() {
   const { data: session } = useSession();
@@ -19,8 +21,10 @@ export default function NewCategoryPage() {
     try {
       const token = (session?.user as any)?.token;
       await createCategory({ ...formData, isActive: true, order: 0 }, token);
+      notify.success('Catégorie créée avec succès.');
       router.push('/admin/categories');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement de la catégorie."));
       console.error('Error saving category:', error);
     } finally {
       setIsSaving(false);

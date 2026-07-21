@@ -1,18 +1,36 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa'
 import Toast from '../ui/Toast'
 
 const MonProfil = () => {
   const [isEditing, setIsEditing] = useState(false)
+  const { data: session } = useSession()
   const [profileData, setProfileData] = useState({
-    name: 'Adèle Délice',
-    email: 'contact@adeledelice.com',
+    name: '',
+    email: '',
     phone: '+221 12 345 6789',
     address: '123 Rue des Délices, Dakar, Sénégal'
   })
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null)
+
+  useEffect(() => {
+    setProfileData((current) => ({
+      ...current,
+      name: session?.user?.name || current.name || 'Utilisateur',
+      email: session?.user?.email || current.email || '',
+    }))
+  }, [session?.user?.email, session?.user?.name])
+
+  const initials = (profileData.name || 'U')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+    || 'U'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +54,12 @@ const MonProfil = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-[#EAEAEA] p-6 md:p-8">
+        {!session?.user && (
+          <div className="mb-6 rounded-xl border border-dashed border-[#EAEAEA] bg-[#F7F6F3] p-4 text-sm text-[#787774]">
+            Connecte-toi pour afficher et modifier ton profil.
+          </div>
+        )}
+
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -101,7 +125,7 @@ const MonProfil = () => {
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 md:w-16 md:h-16 bg-[#111111] rounded-full flex items-center justify-center text-white text-xl md:text-2xl font-bold">
-                AD
+                {initials}
               </div>
               <div>
                 <h3 className="text-lg md:text-xl font-bold text-[#111111]">{profileData.name}</h3>

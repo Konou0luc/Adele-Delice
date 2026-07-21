@@ -5,8 +5,11 @@ import type { Category } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { FaArrowLeft, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function EditCategoryPage() {
   const { data: session } = useSession();
@@ -34,6 +37,7 @@ export default function EditCategoryPage() {
         imageUrl: data.imageUrl || ''
       });
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors du chargement de la catégorie.'));
       console.error('Error fetching category:', error);
     } finally {
       setLoading(false);
@@ -46,8 +50,10 @@ export default function EditCategoryPage() {
     try {
       const token = (session?.user as any)?.token;
       await updateCategory(id, formData, token);
+      notify.success('Catégorie mise à jour avec succès.');
       router.push('/admin/categories');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement de la catégorie."));
       console.error('Error saving category:', error);
     } finally {
       setIsSaving(false);
@@ -60,8 +66,10 @@ export default function EditCategoryPage() {
     try {
       const token = (session?.user as any)?.token;
       await deleteCategory(id, token);
+      notify.success('Catégorie supprimée avec succès.');
       router.push('/admin/categories');
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors de la suppression de la catégorie.'));
       console.error('Error deleting category:', error);
     } finally {
       setIsDeleting(false);
@@ -78,14 +86,12 @@ export default function EditCategoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/categories" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <FaArrowLeft />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-[#111111]">Modifier la catégorie</h1>
-          <p className="text-[#787774] mt-2">Modifier les informations de la catégorie</p>
-        </div>
+      <AdminPageHeader
+        backHref="/admin/categories"
+        breadcrumb="Catégories"
+        title="Modifier la catégorie"
+        description="Modifier les informations de la catégorie"
+        actions={
         <button
           onClick={handleDelete}
           disabled={isDeleting}
@@ -98,7 +104,8 @@ export default function EditCategoryPage() {
           )}
           Supprimer
         </button>
-      </div>
+        }
+      />
 
       <div className="bg-white rounded-xl shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-8">

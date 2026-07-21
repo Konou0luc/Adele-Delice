@@ -5,8 +5,11 @@ import type { Dish, Category } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { FaArrowLeft, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import MultiImageUpload from '@/components/admin/MultiImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function EditDishPage() {
   const { data: session } = useSession();
@@ -59,6 +62,7 @@ export default function EditDishPage() {
         allergens: dishData.allergens.join(', ')
       });
     } catch (error) {
+      notify.error('Erreur lors du chargement du plat.');
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -82,8 +86,10 @@ export default function EditDishPage() {
         allergens: formData.allergens.split(',').map(a => a.trim()).filter(a => a)
       };
       await updateDish(id, dishData, token);
+      notify.success('Plat mis à jour avec succès.');
       router.push('/admin/dishes');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement du plat."));
       console.error('Error saving dish:', error);
     } finally {
       setIsSaving(false);
@@ -96,8 +102,10 @@ export default function EditDishPage() {
     try {
       const token = (session?.user as any)?.token;
       await deleteDish(id, token);
+      notify.success('Plat supprimé avec succès.');
       router.push('/admin/dishes');
     } catch (error) {
+      notify.error(getErrorMessage(error, 'Erreur lors de la suppression du plat.'));
       console.error('Error deleting dish:', error);
     } finally {
       setIsDeleting(false);
@@ -114,14 +122,12 @@ export default function EditDishPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/dishes" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <FaArrowLeft />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-[#111111]">Modifier le plat</h1>
-          <p className="text-[#787774] mt-2">Modifier les informations du plat</p>
-        </div>
+      <AdminPageHeader
+        backHref="/admin/dishes"
+        breadcrumb="Plats"
+        title="Modifier le plat"
+        description="Modifier les informations du plat"
+        actions={
         <button
           onClick={handleDelete}
           disabled={isDeleting}
@@ -134,7 +140,8 @@ export default function EditDishPage() {
           )}
           Supprimer
         </button>
-      </div>
+        }
+      />
 
       <div className="bg-white rounded-xl shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-8">

@@ -5,8 +5,11 @@ import type { GalleryItem } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { FaArrowLeft, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function EditGalleryPage() {
   const { data: session } = useSession();
@@ -38,6 +41,7 @@ export default function EditGalleryPage() {
         category: data.category || ''
       });
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors du chargement de l'image."));
       console.error('Error fetching gallery item:', error);
     } finally {
       setLoading(false);
@@ -50,8 +54,10 @@ export default function EditGalleryPage() {
     try {
       const token = (session?.user as any)?.token;
       await updateGalleryItem(id, formData, token);
+      notify.success('Image mise à jour avec succès.');
       router.push('/admin/gallery');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de l'enregistrement de l'image."));
       console.error('Error saving gallery item:', error);
     } finally {
       setIsSaving(false);
@@ -64,8 +70,10 @@ export default function EditGalleryPage() {
     try {
       const token = (session?.user as any)?.token;
       await deleteGalleryItem(id, token);
+      notify.success('Image supprimée avec succès.');
       router.push('/admin/gallery');
     } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors de la suppression de l'image."));
       console.error('Error deleting gallery item:', error);
     } finally {
       setIsDeleting(false);
@@ -82,14 +90,12 @@ export default function EditGalleryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/gallery" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <FaArrowLeft />
-        </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-[#111111]">Modifier l'image</h1>
-          <p className="text-[#787774] mt-2">Modifier les informations de l'image</p>
-        </div>
+      <AdminPageHeader
+        backHref="/admin/gallery"
+        breadcrumb="Galerie"
+        title="Modifier l'image"
+        description="Modifier les informations de l'image"
+        actions={
         <button
           onClick={handleDelete}
           disabled={isDeleting}
@@ -102,7 +108,8 @@ export default function EditGalleryPage() {
           )}
           Supprimer
         </button>
-      </div>
+        }
+      />
 
       <div className="bg-white rounded-xl shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-8">

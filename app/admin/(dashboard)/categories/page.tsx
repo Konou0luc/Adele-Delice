@@ -4,7 +4,9 @@ import { getCategories, deleteCategory } from '@/lib/api';
 import type { Category } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
+import { notify } from '@/lib/toast';
+import { getErrorMessage } from '@/lib/api-error';
 
 export default function CategoriesPage() {
   const { data: session } = useSession();
@@ -22,6 +24,7 @@ export default function CategoriesPage() {
       const data = await getCategories();
       setCategories(data);
     } catch (error) {
+      notify.error('Erreur lors du chargement des catégories.');
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
@@ -31,11 +34,16 @@ export default function CategoriesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) return;
     setIsDeleting(id);
+    const toastId = notify.loading("Suppression de la catégorie...");
     try {
       const token = (session?.user as any)?.token;
       await deleteCategory(id, token);
-      fetchCategories();
+      await fetchCategories();
+      notify.success("Catégorie supprimée avec succès.");
+      notify.dismiss(toastId);
     } catch (error) {
+      notify.error(getErrorMessage(error));
+      notify.dismiss(toastId);
       console.error('Error deleting category:', error);
     } finally {
       setIsDeleting(null);
@@ -96,16 +104,21 @@ export default function CategoriesPage() {
                     {category.description || '-'}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      category.isActive
+                    <span className={`px-2 py-1 text-xs rounded-full ${category.isActive
                         ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-700'
-                    }`}>
+                      }`}>
                       {category.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/admin/categories/${category.id}`}
+                        className="p-2 text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] rounded-lg transition-colors"
+                      >
+                        <FaEye />
+                      </Link>
                       <Link
                         href={`/admin/categories/${category.id}/edit`}
                         className="p-2 text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] rounded-lg transition-colors"
