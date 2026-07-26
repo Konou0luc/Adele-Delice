@@ -65,7 +65,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className={`text-sm font-semibold transition-colors ${(!isHome || scrolled) ? 'text-[#111111] hover:text-gray-600' : 'text-white hover:text-white/80'}`}
+                className={`text-sm font-semibold transition-colors ${(!isHome || scrolled) ? 'text-red-600 hover:text-red-700' : 'text-red-300 hover:text-red-200'}`}
               >
                 Déconnexion
               </button>
@@ -121,7 +121,7 @@ const Navbar = () => {
                   setIsMenuOpen(false);
                   signOut({ callbackUrl: '/' });
                 }}
-                className="w-full text-left px-4 py-3 text-[#111111] font-medium hover:bg-gray-100 rounded-lg"
+                className="w-full text-left px-4 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg"
               >
                 Se déconnecter
               </button>

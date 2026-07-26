@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
+import "react-international-phone/style.css";
 import { Providers } from "@/providers";
 import { Toaster } from "sonner";
+import CartFloatingButton from "@/components/CartFloatingButton";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -26,6 +28,7 @@ export default function RootLayout({
         className={`${montserrat.variable} font-montserrat antialiased`}
       >
         <Providers>{children}</Providers>
+        <CartFloatingButton />
 
         <Toaster
           position="top-right"

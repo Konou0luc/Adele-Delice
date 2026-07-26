@@ -2,6 +2,31 @@ export interface AuthenticatedUser {
   token?: string | null;
 }
 
+export interface BackendLoginUser {
+  id: string;
+  name?: string | null;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  image?: string | null;
+  role?: string | null;
+}
+
+export interface CurrentUser {
+  id: string;
+  name?: string | null;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  image?: string | null;
+  role?: string | null;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 }
@@ -23,7 +48,7 @@ export function buildAuthHeaders(token?: string) {
 export async function login(data: { email: string; password: string }) {
   const { request } = await import("./request");
 
-  return request<{ token: string; user: import("./api").User }>("/api/login", {
+  return request<{ token: string; user: BackendLoginUser }>("/api/login", {
     method: "POST",
     body: data,
   });
@@ -51,5 +76,30 @@ export async function register(data: {
   }>("/api/register", {
     method: "POST",
     body: data,
+  });
+}
+
+export async function getCurrentUser(token?: string) {
+  const { request } = await import("./request");
+
+  return request<CurrentUser>("/api/me", {
+    token,
+  });
+}
+
+export async function updateCurrentUser(
+  data: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+  },
+  token?: string
+) {
+  const { request } = await import("./request");
+
+  return request<CurrentUser>("/api/me", {
+    method: "PATCH",
+    body: data,
+    token,
   });
 }

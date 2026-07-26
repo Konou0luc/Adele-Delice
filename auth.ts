@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import Google from 'next-auth/providers/google';
+import { createApiToken } from '@/lib/api-token';
 import { login as loginRequest } from '@/lib/auth';
+
+type AuthRole = 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
 
 function splitName(name?: string | null) {
   const cleaned = (name ?? '').trim();
@@ -17,16 +19,66 @@ function splitName(name?: string | null) {
   return { firstName, lastName };
 }
 
-const googleProvider =
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-    ? Google({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      })
-    : null;
+function buildSessionToken(input: {
+  id: string;
+  role: AuthRole;
+  email: string;
+  firstName: string;
+  lastName: string;
+}) {
+  return createApiToken({
+    sub: input.id,
+    role: input.role,
+    email: input.email,
+    firstName: input.firstName,
+    lastName: input.lastName,
+  });
+}
+
+function resolveProfileName(name?: string | null) {
+  const { firstName, lastName } = splitName(name);
+
+  return {
+    name: (name ?? '').trim(),
+    firstName,
+    lastName,
+  };
+}
+
+const googleProvider = {
+  id: 'google',
+  name: 'Google',
+  type: 'oauth',
+  issuer: 'https://accounts.google.com',
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  authorization: {
+    url: 'https://accounts.google.com/o/oauth2/v2/auth',
+    params: {
+      scope: 'openid profile email',
+      prompt: 'consent',
+      access_type: 'offline',
+      response_type: 'code',
+    },
+  },
+  token: 'https://oauth2.googleapis.com/token',
+  userinfo: 'https://openidconnect.googleapis.com/v1/userinfo',
+  profile(profile: { sub?: string; name?: string; email?: string; picture?: string }) {
+    return {
+      id: profile.sub ?? '',
+      name: profile.name ?? '',
+      email: profile.email ?? '',
+      image: profile.picture ?? '',
+    };
+  },
+  style: {
+    brandColor: '#1a73e8',
+  },
+} as const;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
+    googleProvider as any,
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -46,62 +98,134 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             password: credentials.password,
           }).catch(() => null);
 
-          if (data && data.user) {
-            return {
-              id: data.user.id,
-              name:
-                data.user.name || `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim(),
-              email: data.user.email,
-              role: data.user.role,
-              image: data.user.image,
-              token: data.token,
-            };
+          if (!data?.user) {
+            return null;
           }
 
-          return null;
+          const resolvedName =
+            data.user.name || `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim();
+          const { firstName, lastName } = splitName(resolvedName);
+          const role = (data.user.role as AuthRole | null | undefined) ?? 'EMPLOYEE';
+
+          return {
+            id: data.user.id,
+            name: resolvedName,
+            email: data.user.email,
+            role,
+            image: data.user.image,
+            firstName: data.user.firstName ?? firstName,
+            lastName: data.user.lastName ?? lastName,
+            token:
+              data.token ||
+              buildSessionToken({
+                id: data.user.id,
+                role,
+                email: data.user.email,
+                firstName: data.user.firstName ?? firstName,
+                lastName: data.user.lastName ?? lastName,
+              }),
+          };
         } catch (error) {
           console.error('Auth error:', error);
           return null;
         }
       },
     }),
-    ...(googleProvider ? [googleProvider] : []),
   ],
   session: { strategy: 'jwt' },
+  secret: process.env.AUTH_SECRET,
   pages: { signIn: '/login' },
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, trigger, session }) {
+      const jwtToken = token as any;
+
       if (user) {
-        const normalizedRole = (user as any).role ?? 'USER';
-        token.role = normalizedRole;
-        token.token = (user as any).token;
-        token.id = (user as any).id;
-        token.picture = (user as any).image ?? token.picture;
-        token.name = (user as any).name ?? token.name;
-        token.email = (user as any).email ?? token.email;
+        const authUser = user as any;
+        const firstName = authUser.firstName ?? splitName(user.name).firstName;
+        const lastName = authUser.lastName ?? splitName(user.name).lastName;
+        const email = user.email ?? '';
+        const name = user.name ?? `${firstName} ${lastName}`.trim();
+        const role = (authUser.role as AuthRole | undefined) ?? 'EMPLOYEE';
+
+        jwtToken.id = user.id;
+        jwtToken.role = role;
+        jwtToken.firstName = firstName;
+        jwtToken.lastName = lastName;
+        jwtToken.name = name;
+        jwtToken.email = email;
+        jwtToken.picture = user.image ?? '';
+        jwtToken.token =
+          authUser.token ??
+          buildSessionToken({
+            id: user.id ?? 'google-user',
+            role,
+            email,
+            firstName,
+            lastName,
+          });
       }
 
-      if (account?.provider === 'google') {
-        const fullName =
-          (profile as { name?: string | null } | undefined)?.name ?? token.name ?? token.email ?? '';
+      if (trigger === 'update' && session) {
+        const sessionUpdate = session as any;
+        const updatedFirstName =
+          typeof sessionUpdate.firstName === 'string'
+            ? sessionUpdate.firstName
+            : typeof sessionUpdate.user?.firstName === 'string'
+              ? sessionUpdate.user.firstName
+              : jwtToken.firstName ?? '';
+        const updatedLastName =
+          typeof sessionUpdate.lastName === 'string'
+            ? sessionUpdate.lastName
+            : typeof sessionUpdate.user?.lastName === 'string'
+              ? sessionUpdate.user.lastName
+              : jwtToken.lastName ?? '';
+        const updatedName =
+          typeof sessionUpdate.name === 'string'
+            ? sessionUpdate.name
+            : typeof sessionUpdate.user?.name === 'string'
+              ? sessionUpdate.user.name
+              : `${updatedFirstName} ${updatedLastName}`.trim();
+        const updatedEmail =
+          typeof sessionUpdate.email === 'string'
+            ? sessionUpdate.email
+            : typeof sessionUpdate.user?.email === 'string'
+              ? sessionUpdate.user.email
+              : jwtToken.email ?? '';
+        const updatedImage =
+          typeof sessionUpdate.image === 'string'
+            ? sessionUpdate.image
+            : typeof sessionUpdate.user?.image === 'string'
+              ? sessionUpdate.user.image
+              : jwtToken.picture ?? '';
+        const updatedRole =
+          typeof sessionUpdate.role === 'string'
+            ? sessionUpdate.role
+            : typeof sessionUpdate.user?.role === 'string'
+              ? sessionUpdate.user.role
+              : jwtToken.role ?? 'EMPLOYEE';
 
-        token.role = 'USER';
-        token.id = token.id ?? account.providerAccountId;
-        token.name = fullName;
-        token.email = token.email ?? (profile as { email?: string | null } | undefined)?.email ?? undefined;
-        token.picture = token.picture ?? (profile as { picture?: string | null } | undefined)?.picture ?? undefined;
+        jwtToken.firstName = updatedFirstName;
+        jwtToken.lastName = updatedLastName;
+        jwtToken.name = updatedName;
+        jwtToken.email = updatedEmail;
+        jwtToken.picture = updatedImage;
+        jwtToken.role = updatedRole;
       }
 
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role ?? 'USER';
-        (session.user as any).token = token.token;
-        (session.user as any).id = token.id;
-        (session.user as any).name = token.name ?? session.user.name;
-        (session.user as any).email = token.email ?? session.user.email;
-        (session.user as any).image = token.picture ?? session.user.image;
+        const sessionUser = session.user as any;
+        const jwtToken = token as any;
+        sessionUser.role = jwtToken.role ?? 'EMPLOYEE';
+        sessionUser.token = jwtToken.token;
+        sessionUser.id = jwtToken.id;
+        sessionUser.firstName = jwtToken.firstName ?? '';
+        sessionUser.lastName = jwtToken.lastName ?? '';
+        sessionUser.name = jwtToken.name ?? session.user.name;
+        sessionUser.email = jwtToken.email ?? session.user.email;
+        sessionUser.image = jwtToken.picture ?? session.user.image;
       }
 
       return session;

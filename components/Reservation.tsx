@@ -32,7 +32,7 @@ const Reservation = () => {
               <label className="block text-sm font-semibold text-[#111111] mb-2">Nom complet</label>
               <input 
                 type="text" 
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="John Doe"
               />
             </div>
@@ -40,7 +40,7 @@ const Reservation = () => {
               <label className="block text-sm font-semibold text-[#111111] mb-2">Numéro de téléphone</label>
               <input 
                 type="tel" 
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="+221 XX XXX XX XX"
               />
             </div>
@@ -48,14 +48,14 @@ const Reservation = () => {
               <label className="block text-sm font-semibold text-[#111111] mb-2">Date</label>
               <input 
                 type="date" 
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#111111] mb-2">Heure</label>
               <input 
                 type="time" 
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
               />
             </div>
             <div className="md:col-span-2">
@@ -86,7 +86,7 @@ const Reservation = () => {
               <label className="block text-sm font-semibold text-[#111111] mb-2">Commentaire (optionnel)</label>
               <textarea 
                 rows={4}
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="Allergies, préférences, occasions spéciales..."
               ></textarea>
             </div>

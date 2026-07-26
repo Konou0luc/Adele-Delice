@@ -127,6 +127,36 @@ export const updateOrder = (id: string, data: Partial<Order>, token?: string) =>
 export const getOrder = (id: string, token?: string) =>
   apiFetch<Order>(`/api/orders/${id}`, { token });
 
+export interface PaymentMethod {
+  YAS_MONEY: "YAS_MONEY";
+  MOOV_MONEY: "MOOV_MONEY";
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  amount: number;
+  method: keyof PaymentMethod;
+  status: "PENDING" | "SUCCESS" | "FAILED";
+  fedaPayReference?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  order?: Order;
+}
+
+export interface CreatePaymentPayload {
+  orderId: string;
+  amount: number;
+  method: keyof PaymentMethod;
+}
+
+export const createPayment = (data: CreatePaymentPayload, token?: string) =>
+  apiFetch<{ payment: Payment; paymentUrl?: string | null }>("/api/payments", {
+    method: "POST",
+    body: data,
+    token,
+  });
+
 // Reservations
 export const getReservations = (token?: string) =>
   apiFetch<Reservation[]>("/api/reservations", { token });
@@ -272,6 +302,7 @@ export interface Order {
   totalAmount: number;
   status: keyof OrderStatus;
   orderItems?: OrderItem[];
+  payment?: Payment;
   createdAt: string;
   updatedAt: string;
 }
@@ -282,9 +313,11 @@ export interface CreateOrderPayload {
   deliveryAddress?: string;
   comment?: string;
   orderType: string;
+  totalAmount: number;
   orderItems: {
     dishId: string;
     quantity: number;
+    unitPrice: number;
   }[];
 }
 

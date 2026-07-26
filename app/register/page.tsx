@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
-import { FaArrowRight, FaEnvelope, FaGoogle, FaLock, FaPhone, FaUser } from 'react-icons/fa';
+import { FaArrowRight, FaEnvelope, FaGoogle, FaLock, FaUser } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { register } from '@/lib/auth';
+import InternationalPhoneField from '@/components/InternationalPhoneField';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -42,6 +43,11 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      if (phone && !phone.startsWith('+228')) {
+        setError('Le numéro de téléphone doit être togolais (+228).')
+        return
+      }
+
       await register({
         firstName,
         lastName,
@@ -173,16 +179,13 @@ export default function RegisterPage() {
 
                 <div className="md:col-span-2">
                   <label className="mb-2 block text-sm font-semibold text-[#111111]">Téléphone</label>
-                  <div className="relative">
-                    <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#787774]" />
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(event) => setPhone(event.target.value)}
-                      className="w-full rounded-xl border border-[#EAEAEA] bg-white px-12 py-3 text-[#111111] placeholder:text-[#A8A29E] focus:border-[#111111] focus:outline-none focus:ring-2 focus:ring-[#111111]/10"
-                      placeholder="+221 77 000 00 00"
-                    />
-                  </div>
+                  <InternationalPhoneField
+                    value={phone}
+                    onChange={setPhone}
+                    defaultCountry="tg"
+                    placeholder="90000000"
+                    className="w-full"
+                  />
                 </div>
 
                 <div>

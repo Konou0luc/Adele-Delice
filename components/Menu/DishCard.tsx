@@ -1,7 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { FaClock } from 'react-icons/fa'
+import { toast } from 'sonner'
 import type { Dish } from '@/lib/api'
+import { addCartItem } from '@/lib/user-flow'
 
 interface DishCardProps {
   dish: Dish
@@ -56,12 +59,39 @@ const DishCard = ({ dish, categoryName }: DishCardProps) => {
             )}
           </div>
           <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-            dish.isAvailable 
-              ? 'bg-green-100 text-green-700' 
+            dish.isAvailable
+              ? 'bg-green-100 text-green-700'
               : 'bg-red-100 text-red-700'
           }`}>
             {dish.isAvailable ? 'Disponible' : 'Indisponible'}
           </span>
+        </div>
+
+        <div className="mt-4 flex gap-3">
+          <Link
+            href={`/menu/${dish.id}`}
+            className="flex-1 rounded-lg border border-[#EAEAEA] px-4 py-2 text-center text-sm font-semibold text-[#111111] transition-colors hover:bg-[#F7F6F3]"
+          >
+            Détail
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              addCartItem({
+                dishId: dish.id,
+                name: dish.name,
+                price: Number(dish.price),
+                image: dish.images[0],
+                categoryName,
+                preparationTime: dish.preparationTime,
+              })
+              toast.success(`${dish.name} ajouté au panier`)
+            }}
+            disabled={!dish.isAvailable}
+            className="flex-1 rounded-lg bg-[#111111] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#333333] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Ajouter
+          </button>
         </div>
       </div>
     </div>

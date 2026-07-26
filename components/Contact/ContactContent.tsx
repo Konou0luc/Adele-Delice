@@ -98,7 +98,7 @@ const ContactContent = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                    className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="John Doe"
                   />
                 </div>
@@ -111,7 +111,7 @@ const ContactContent = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                    className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                     placeholder="john@exemple.com"
                   />
                 </div>
@@ -125,7 +125,7 @@ const ContactContent = () => {
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                  className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 >
                   <option value="">Sélectionnez un sujet</option>
                   <option value="reservation">Réservation</option>
@@ -144,7 +144,7 @@ const ContactContent = () => {
                   onChange={handleChange}
                   required
                   rows={6}
-                  className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111111]/20 resize-vertical"
+                  className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20 resize-vertical"
                   placeholder="Votre message..."
                 ></textarea>
               </div>

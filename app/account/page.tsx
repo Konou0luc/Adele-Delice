@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { signOut, useSession } from 'next-auth/react'
 import Navbar from '@/components/Navbar'
@@ -10,12 +10,14 @@ import MesCommandes from '@/components/Account/MesCommandes'
 import MonPanier from '@/components/Account/MonPanier'
 import MesFavoris from '@/components/Account/MesFavoris'
 import MonProfil from '@/components/Account/MonProfil'
+import { getCurrentUser } from '@/lib/auth'
 import { FaShoppingBag, FaShoppingCart, FaHeart, FaUser } from 'react-icons/fa'
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('commandes')
   const { status, data: session } = useSession()
   const isAuthenticated = status === 'authenticated'
+  const token = (session?.user as { token?: string } | undefined)?.token
 
   const tabs = [
     { id: 'commandes', name: 'Mes Commandes', icon: FaShoppingBag },
@@ -23,6 +25,33 @@ export default function AccountPage() {
     { id: 'favoris', name: 'Mes Favoris', icon: FaHeart },
     { id: 'profil', name: 'Mon Profil', icon: FaUser }
   ]
+
+  useEffect(() => {
+    if (!isAuthenticated || !token || activeTab !== 'commandes') {
+      return
+    }
+
+    let isMounted = true
+
+    const loadProfileCompletion = async () => {
+      try {
+        const user = await getCurrentUser(token)
+        const isIncomplete = !user.firstName || !user.lastName || !user.phone
+
+        if (isMounted && isIncomplete) {
+          setActiveTab('profil')
+        }
+      } catch {
+        // On laisse l'utilisateur naviguer même si le profil ne se charge pas ici.
+      }
+    }
+
+    loadProfileCompletion()
+
+    return () => {
+      isMounted = false
+    }
+  }, [activeTab, isAuthenticated, token])
 
   const renderContent = () => {
     switch (activeTab) {
@@ -83,7 +112,7 @@ export default function AccountPage() {
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="inline-flex items-center justify-center rounded-xl border border-[#EAEAEA] bg-white px-6 py-3 font-semibold text-[#111111] transition-colors hover:bg-[#F7F6F3]"
+                  className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-6 py-3 font-semibold text-red-600 transition-colors hover:bg-red-50"
                 >
                   Se déconnecter
                 </button>
