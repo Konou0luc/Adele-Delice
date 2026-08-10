@@ -6,9 +6,9 @@ import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import DishCard from '@/components/Menu/DishCard'
-import { getDishes, getDish } from '@/lib/api'
+import { getDishes, getDish, getCategories } from '@/lib/api'
 import { addCartItem } from '@/lib/user-flow'
-import type { Dish } from '@/lib/api'
+import type { Dish, Category } from '@/lib/api'
 import { FaArrowLeft, FaCartShopping, FaClock, FaUtensils } from 'react-icons/fa6'
 import { toast } from 'sonner'
 
@@ -18,6 +18,7 @@ export default function DishDetailPage() {
   const id = params?.id
   const [dish, setDish] = useState<Dish | null>(null)
   const [relatedDishes, setRelatedDishes] = useState<Dish[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,9 +29,13 @@ export default function DishDetailPage() {
     const loadDish = async () => {
       try {
         setLoading(true)
-        const currentDish = await getDish(id)
+        const [currentDish, allCategories] = await Promise.all([
+          getDish(id),
+          getCategories(),
+        ])
         if (!isMounted) return
         setDish(currentDish)
+        setCategories(allCategories)
 
         const related = await getDishes({ categoryId: currentDish.categoryId })
         if (!isMounted) return
@@ -57,6 +62,18 @@ export default function DishDetailPage() {
     if (!dish) return []
     return [dish.isPromoted && 'Promo', dish.isNew && 'Nouveau'].filter(Boolean) as string[]
   }, [dish])
+
+  const categoryNameMap = useMemo(() => {
+    const map = new Map<string, string>()
+    categories.forEach(category => {
+      map.set(category.id, category.name)
+    })
+    return map
+  }, [categories])
+
+  const getCategoryName = (categoryId: string) => {
+    return categoryNameMap.get(categoryId) || 'Catégorie inconnue'
+  }
 
   if (loading) {
     return (
@@ -151,7 +168,7 @@ export default function DishDetailPage() {
                   <p className="text-sm text-[#787774]">Catégorie</p>
                   <p className="flex items-center gap-2 text-lg font-semibold text-[#111111]">
                     <FaUtensils className="h-4 w-4" />
-                    {dish.categoryId}
+                    {dish ? getCategoryName(dish.categoryId) : '-'}
                   </p>
                 </div>
               </div>
@@ -165,7 +182,7 @@ export default function DishDetailPage() {
                       name: dish.name,
                       price: Number(dish.price),
                       image: dish.images[0],
-                      categoryName: dish.categoryId,
+                      categoryName: getCategoryName(dish.categoryId),
                       preparationTime: dish.preparationTime,
                     })
                     toast.success('Ajouté au panier')

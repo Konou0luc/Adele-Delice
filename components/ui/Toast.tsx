@@ -41,7 +41,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, isVisible, onClose }) => {
   const Icon = typeIcons[type]
 
   return (
-    <div className="fixed top-24 right-4 z-[100] font-montserrat">
+    <div className="fixed top-4 right-4 z-[200] max-w-md font-montserrat pointer-events-auto">
       <div 
         className={`flex items-center gap-4 px-6 py-4 rounded-xl border shadow-lg animate-slide-in ${typeStyles[type]}`}
       >

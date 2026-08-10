@@ -122,14 +122,15 @@ const MonProfil = () => {
 
   const isProfileComplete = Boolean(profileData.firstName && profileData.lastName && profileData.phone)
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning') => {
+    setToast({ message, type })
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!token) {
-      setToast({
-        message: 'Session introuvable, reconnecte-toi.',
-        type: 'error',
-      })
+      showToast('Session introuvable, reconnecte-toi.', 'error')
       return
     }
 
@@ -139,10 +140,7 @@ const MonProfil = () => {
       const phone = profileData.phone.trim()
 
       if (phone && !phone.startsWith('+228')) {
-        setToast({
-          message: 'Le numéro de téléphone doit être togolais (+228).',
-          type: 'error',
-        })
+        showToast('Le numéro de téléphone doit être togolais (+228).', 'error')
         return
       }
 
@@ -170,15 +168,12 @@ const MonProfil = () => {
       })
 
       setIsEditing(false)
-      setToast({
-        message: isProfileComplete ? 'Profil mis à jour avec succès !' : 'Profil complété avec succès !',
-        type: 'success',
-      })
+      showToast(
+        isProfileComplete ? 'Profil mis à jour avec succès !' : 'Profil complété avec succès !',
+        'success'
+      )
     } catch {
-      setToast({
-        message: 'Impossible de mettre à jour le profil.',
-        type: 'error',
-      })
+      showToast('Impossible de mettre à jour le profil.', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -274,6 +269,7 @@ const MonProfil = () => {
                 onChange={(value) => setProfileData({ ...profileData, phone: value })}
                 defaultCountry="tg"
                 placeholder="90000000"
+                className="w-full"
               />
             </div>
 

@@ -1,10 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { FaMinus, FaPlus } from 'react-icons/fa';
+import InternationalPhoneField from './InternationalPhoneField';
+import { createReservation } from '@/lib/api';
 
 const Reservation = () => {
   const [guestCount, setGuestCount] = useState(1);
+  const [phone, setPhone] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const increment = () => {
     if (guestCount < 10) setGuestCount(guestCount + 1);
@@ -12,6 +21,41 @@ const Reservation = () => {
 
   const decrement = () => {
     if (guestCount > 1) setGuestCount(guestCount - 1);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    if (phone && !phone.startsWith('+228')) {
+      toast.error('Le numéro de téléphone doit être togolais (+228).');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const reservationDate = date && time ? new Date(`${date}T${time}`).toISOString() : date ? new Date(date).toISOString() : undefined;
+
+      await createReservation({
+        customerName: fullName,
+        customerPhone: phone,
+        date: reservationDate,
+        comment,
+        numberOfPeople: guestCount,
+      });
+
+      toast.success('Réservation confirmée avec succès !');
+      setFullName('');
+      setPhone('');
+      setDate('');
+      setTime('');
+      setComment('');
+      setGuestCount(1);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Impossible de confirmer la réservation.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -26,36 +70,47 @@ const Reservation = () => {
             Venez profiter d'une expérience culinaire unique dans notre restaurant.
           </p>
         </div>
-        <form className="bg-white p-8 rounded-xl border border-[#EAEAEA] shadow-sm">
+        <form className="bg-white p-8 rounded-xl border border-[#EAEAEA] shadow-sm" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-semibold text-[#111111] mb-2">Nom complet</label>
               <input 
                 type="text" 
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
                 className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="John Doe"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#111111] mb-2">Numéro de téléphone</label>
-              <input 
-                type="tel" 
-                className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
-                placeholder="+221 XX XXX XX XX"
+              <InternationalPhoneField
+                value={phone}
+                onChange={setPhone}
+                defaultCountry="tg"
+                placeholder="90000000"
+                className="w-full"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#111111] mb-2">Date</label>
               <input 
                 type="date" 
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
                 className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#111111] mb-2">Heure</label>
               <input 
                 type="time" 
+                value={time}
+                onChange={(event) => setTime(event.target.value)}
                 className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
+                required
               />
             </div>
             <div className="md:col-span-2">
@@ -86,6 +141,8 @@ const Reservation = () => {
               <label className="block text-sm font-semibold text-[#111111] mb-2">Commentaire (optionnel)</label>
               <textarea 
                 rows={4}
+                value={comment}
+                onChange={(event) => setComment(event.target.value)}
                 className="w-full px-4 py-3 border border-[#EAEAEA] rounded-lg bg-white text-[#111111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-[#111111]/20"
                 placeholder="Allergies, préférences, occasions spéciales..."
               ></textarea>
@@ -93,9 +150,10 @@ const Reservation = () => {
           </div>
           <button 
             type="submit" 
-            className="w-full py-4 bg-[#111111] text-white text-lg font-semibold rounded-lg hover:bg-[#333333] transition-colors"
+            disabled={isSubmitting}
+            className="w-full py-4 bg-[#111111] text-white text-lg font-semibold rounded-lg hover:bg-[#333333] transition-colors disabled:opacity-70"
           >
-            Confirmer la réservation
+            {isSubmitting ? 'En cours...' : 'Confirmer la réservation'}
           </button>
         </form>
       </div>
