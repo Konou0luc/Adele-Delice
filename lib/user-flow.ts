@@ -124,4 +124,19 @@ export function getOrderHistoryItem(id: string) {
   return getOrderHistory().find((order) => order.id === id)
 }
 
+export function updateOrderHistoryStatus(orderNumberOrId: string, newStatus: string) {
+  const orders = getOrderHistory()
+  const updated = orders.map((order) => {
+    if (
+      order.orderNumber.toUpperCase() === orderNumberOrId.toUpperCase() ||
+      order.id.toUpperCase() === orderNumberOrId.toUpperCase()
+    ) {
+      return { ...order, status: newStatus }
+    }
+    return order
+  })
+  writeJson(ORDERS_KEY, updated)
+  return updated
+}
+
 export const cartUpdatedEventName = CART_UPDATED_EVENT

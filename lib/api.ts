@@ -127,6 +127,17 @@ export const updateOrder = (id: string, data: Partial<Order>, token?: string) =>
 export const getOrder = (id: string, token?: string) =>
   apiFetch<Order>(`/api/orders/${id}`, { token });
 
+export const getTrackedOrder = async (code: string): Promise<Order> => {
+  const res = await fetch(`/api/track-order?code=${encodeURIComponent(code)}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new ApiError(errorData.message || "Commande introuvable", res.status, errorData);
+  }
+  return res.json();
+};
+
 export interface PaymentMethod {
   YAS_MONEY: "YAS_MONEY";
   MOOV_MONEY: "MOOV_MONEY";

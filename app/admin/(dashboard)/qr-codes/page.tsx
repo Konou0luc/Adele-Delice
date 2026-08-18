@@ -15,7 +15,7 @@ export default function AdminQRCodesPage() {
   const [selectedId, setSelectedId] = useState<string>('');
   const [qrUrl, setQrUrl] = useState<string>('');
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://adele-delice.com';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://adele-delice.vercel.app';
 
   useEffect(() => {
     const loadData = async () => {

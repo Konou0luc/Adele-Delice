@@ -60,13 +60,21 @@ const MesCommandes = () => {
                     })}
                   </p>
                 </div>
-                <Link
-                  href={`/account/orders/${order.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[#EAEAEA] px-5 py-3 font-semibold text-[#111111] transition-colors hover:bg-[#F7F6F3]"
-                >
-                  Voir le détail
-                  <FaArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link
+                    href={`/track-order?code=${order.orderNumber}`}
+                    className="inline-flex items-center justify-center rounded-xl bg-[#111111] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#333333]"
+                  >
+                    Suivre en direct
+                  </Link>
+                  <Link
+                    href={`/account/orders/${order.id}`}
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#EAEAEA] px-5 py-3 text-sm font-semibold text-[#111111] transition-colors hover:bg-[#F7F6F3]"
+                  >
+                    Voir le détail
+                    <FaArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
