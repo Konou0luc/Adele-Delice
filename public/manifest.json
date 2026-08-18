@@ -1,0 +1,22 @@
+{
+  "name": "Adèle Délice Restaurant",
+  "short_name": "AdèleDélice",
+  "description": "Mangez comme si vous êtes à la maison. Commandez vos plats en ligne chez Adèle Délice.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F6F3",
+  "theme_color": "#111111",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-small.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/logo-small.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

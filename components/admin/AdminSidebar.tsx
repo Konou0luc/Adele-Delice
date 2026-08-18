@@ -11,6 +11,12 @@ import {
   FaSignOutAlt,
   FaBars,
   FaTimes,
+  FaUsers,
+  FaStar,
+  FaPercent,
+  FaGlobe,
+  FaNewspaper,
+  FaQrcode,
 } from 'react-icons/fa';
 import { signOut } from 'next-auth/react';
 
@@ -25,6 +31,12 @@ const AdminSidebar = () => {
     { name: 'Menus', href: '/admin/menus', icon: FaClipboardList },
     { name: 'Commandes', href: '/admin/orders', icon: FaClipboardList },
     { name: 'Réservations', href: '/admin/reservations', icon: FaCalendarAlt },
+    { name: 'Promotions', href: '/admin/promotions', icon: FaPercent },
+    { name: 'Avis Clients', href: '/admin/reviews', icon: FaStar },
+    { name: 'Utilisateurs', href: '/admin/users', icon: FaUsers },
+    { name: 'Blog', href: '/admin/blog', icon: FaNewspaper },
+    { name: 'Contenu Site', href: '/admin/content', icon: FaGlobe },
+    { name: 'QR Codes', href: '/admin/qr-codes', icon: FaQrcode },
     { name: 'Galerie', href: '/admin/gallery', icon: FaImages },
   ];
 

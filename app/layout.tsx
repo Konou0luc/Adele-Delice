@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import "react-international-phone/style.css";
@@ -12,9 +12,14 @@ const montserrat = Montserrat({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#111111",
+};
+
 export const metadata: Metadata = {
   title: "Adèle Délice - Restaurant",
   description: "Mangez comme si vous êtes à la maison.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

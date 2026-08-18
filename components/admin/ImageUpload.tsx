@@ -4,15 +4,24 @@ import { useSession } from 'next-auth/react';
 import { uploadImage } from '@/lib/api';
 
 interface ImageUploadProps {
-  onImageUploaded: (url: string) => void;
+  onImageUploaded?: (url: string) => void;
   currentImage?: string;
+  value?: string;
+  onChange?: (url: string) => void;
   label?: string;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, currentImage, label = "Image" }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  onImageUploaded,
+  currentImage,
+  value,
+  onChange,
+  label,
+}) => {
   const { data: session } = useSession();
   const [isUploading, setIsUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentImage || null);
+  const effectiveValue = value || currentImage;
+  const [preview, setPreview] = useState<string | null>(effectiveValue || null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,7 +33,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUploaded, currentImage
       const token = (session?.user as any)?.token;
       const result = await uploadImage(file, token);
       setPreview(result.url);
-      onImageUploaded(result.url);
+      if (onChange) onChange(result.url);
+      if (onImageUploaded) onImageUploaded(result.url);
     } catch (error) {
       console.error('Erreur lors de l\'upload:', error);
       alert('Erreur lors de l\'upload de l\'image');

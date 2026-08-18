@@ -7,7 +7,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 interface AdminPageHeaderProps {
   title: string;
   description?: string;
-  backHref: string;
+  backHref?: string;
   breadcrumb?: string;
   meta?: React.ReactNode;
   actions?: React.ReactNode;
@@ -16,7 +16,7 @@ interface AdminPageHeaderProps {
 export default function AdminPageHeader({
   title,
   description,
-  backHref,
+  backHref = '/admin',
   breadcrumb,
   meta,
   actions,

@@ -339,3 +339,90 @@ export interface Reservation {
   createdAt: string;
   updatedAt: string;
 }
+
+// Users API
+export const getUsers = (token?: string) =>
+  apiFetch<User[]>('/api/users', { token });
+export const getUser = (id: string, token?: string) =>
+  apiFetch<User>(`/api/users/${id}`, { token });
+export const createUser = (data: Partial<User>, token?: string) =>
+  apiFetch<User>('/api/users', { method: 'POST', body: data, token });
+export const updateUser = (id: string, data: Partial<User>, token?: string) =>
+  apiFetch<User>(`/api/users/${id}`, { method: 'PUT', body: data, token });
+export const deleteUser = (id: string, token?: string) =>
+  apiFetch<void>(`/api/users/${id}`, { method: 'DELETE', token });
+
+// Reviews API
+export interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  comment?: string;
+  isApproved: boolean;
+  dishId?: string;
+  dish?: Dish;
+  createdAt: string;
+}
+
+export const getReviews = (params?: { dishId?: string; isApproved?: boolean }, token?: string) =>
+  apiFetch<Review[]>(withQuery('/api/reviews', params), { token });
+export const createReview = (data: Partial<Review>) =>
+  apiFetch<Review>('/api/reviews', { method: 'POST', body: data });
+export const updateReview = (id: string, data: Partial<Review>, token?: string) =>
+  apiFetch<Review>(`/api/reviews/${id}`, { method: 'PUT', body: data, token });
+export const deleteReview = (id: string, token?: string) =>
+  apiFetch<void>(`/api/reviews/${id}`, { method: 'DELETE', token });
+
+// Promotions API
+export interface Promotion {
+  id: string;
+  name: string;
+  description?: string;
+  percentage?: number;
+  fixedAmount?: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  dishId?: string;
+  dish?: Dish;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getPromotions = (token?: string) =>
+  apiFetch<Promotion[]>('/api/promotions', { token });
+export const createPromotion = (data: Partial<Promotion>, token?: string) =>
+  apiFetch<Promotion>('/api/promotions', { method: 'POST', body: data, token });
+export const updatePromotion = (id: string, data: Partial<Promotion>, token?: string) =>
+  apiFetch<Promotion>(`/api/promotions/${id}`, { method: 'PUT', body: data, token });
+export const deletePromotion = (id: string, token?: string) =>
+  apiFetch<void>(`/api/promotions/${id}`, { method: 'DELETE', token });
+
+// Blog Posts API
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getBlogPosts = (params?: { isPublished?: boolean }) =>
+  apiFetch<BlogPost[]>(withQuery('/api/blog-posts', params));
+export const getBlogPost = (id: string) =>
+  apiFetch<BlogPost>(`/api/blog-posts/${id}`);
+export const createBlogPost = (data: Partial<BlogPost>, token?: string) =>
+  apiFetch<BlogPost>('/api/blog-posts', { method: 'POST', body: data, token });
+export const updateBlogPost = (id: string, data: Partial<BlogPost>, token?: string) =>
+  apiFetch<BlogPost>(`/api/blog-posts/${id}`, { method: 'PUT', body: data, token });
+export const deleteBlogPost = (id: string, token?: string) =>
+  apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE', token });
+
+// Site Content API
+export const getSiteContent = () =>
+  apiFetch<Record<string, string>>('/api/site-content');
+export const updateSiteContent = (data: Record<string, string>, token?: string) =>
+  apiFetch<Record<string, string>>('/api/site-content', { method: 'PUT', body: data, token });
+

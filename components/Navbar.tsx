@@ -25,10 +25,12 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Accueil", href: "/" },
-    { name: "À propos", href: isHome ? "#about" : "/#about" },
+    { name: "À propos", href: "/about" },
     { name: "Menu", href: "/menu" },
+    { name: "Blog", href: "/blog" },
     { name: "Galerie", href: "/gallery" },
-    { name: "Réservation", href: isHome ? "#reservation" : "/#reservation" },
+    { name: "Suivi", href: "/track-order" },
+    { name: "Avis", href: "/reviews" },
     { name: "Contact", href: "/contact" }
   ];
 
