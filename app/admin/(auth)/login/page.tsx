@@ -20,13 +20,16 @@ export default function AdminLoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: true,
+        redirect: false,
         callbackUrl: '/admin',
       }) as any;
 
       if (result?.error) {
         setError('Identifiants incorrects');
+        return;
       }
+
+      window.location.assign(result?.url || '/admin');
     } catch (err) {
       setError('Une erreur est survenue');
     } finally {

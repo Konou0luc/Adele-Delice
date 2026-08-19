@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-  const isLoggedIn = !!token;
+export default auth((req) => {
+  const session = req.auth;
+  const isLoggedIn = !!session;
   const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
   const isAdminLoginRoute = req.nextUrl.pathname === '/admin/login';
 
@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
     // Si c'est la page de login admin et qu'on est déjà connecté en staff
     if (isAdminLoginRoute) {
       if (isLoggedIn) {
-        const role = (token as { role?: string })?.role;
+        const role = session?.user?.role;
         if (role === 'ADMIN' || role === 'MANAGER' || role === 'EMPLOYEE') {
           return NextResponse.redirect(new URL('/admin', req.nextUrl));
         }
@@ -27,7 +27,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Vérification des rôles autorisés (ADMIN, MANAGER, EMPLOYEE)
-    const role = (token as { role?: string })?.role;
+    const role = session?.user?.role;
     const allowedRoles = ['ADMIN', 'MANAGER', 'EMPLOYEE'];
 
     if (!role || !allowedRoles.includes(role)) {
@@ -36,9 +36,10 @@ export async function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ['/admin/:path*'],
+  runtime: 'nodejs',
 };
 

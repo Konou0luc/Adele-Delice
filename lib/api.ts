@@ -1,4 +1,5 @@
 export { login } from "./auth";
+import { ApiError } from "./api-error";
 import { request } from "./request";
 
 interface QueryValue {
