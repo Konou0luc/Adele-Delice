@@ -32,7 +32,7 @@ const Hero = () => {
           </a>
           <a 
             href="#reservation" 
-            className="px-10 py-4 border-2 border-white text-white text-lg font-semibold rounded-lg hover:bg-white/10 transition-colors"
+            className="mb-10 px-10 py-4 border-2 border-white text-white text-lg font-semibold rounded-lg hover:bg-white/10 transition-colors sm:mb-0"
           >
             Réserver une table
           </a>
