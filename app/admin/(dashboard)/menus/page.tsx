@@ -7,6 +7,9 @@ import type { Menu, MenuType } from '@/lib/api';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
 import { notify } from '@/lib/toast';
 import { getErrorMessage } from '@/lib/api-error';
+import Pagination from '@/components/admin/Pagination';
+
+const ITEMS_PER_PAGE = 6;
 
 const TYPE_LABELS: Record<keyof MenuType, string> = {
   DAILY: 'Quotidien',
@@ -46,6 +49,7 @@ export default function MenusPage() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (status !== 'authenticated') {
@@ -86,6 +90,12 @@ export default function MenusPage() {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(menus.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedMenus = menus.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -96,14 +106,14 @@ export default function MenusPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#111111]">Menus</h1>
           <p className="text-[#787774] mt-2">Gérez les menus quotidiens, hebdomadaires et spéciaux</p>
         </div>
         <Link
           href="/admin/menus/new"
-          className="flex items-center gap-2 px-4 py-2 bg-[#111111] text-white rounded-lg hover:bg-[#333333] transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#111111] px-4 py-2 text-white transition-colors hover:bg-[#333333] sm:w-auto"
         >
           <FaPlus />
           Ajouter un menu
@@ -123,8 +133,9 @@ export default function MenusPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {menus.map((menu) => (
+        <div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {paginatedMenus.map((menu) => (
             <div key={menu.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
               {menu.imageUrl ? (
                 <img src={menu.imageUrl} alt={menu.name} className="w-full h-48 object-cover" />
@@ -207,7 +218,16 @@ export default function MenusPage() {
                 ) : null}
               </div>
             </div>
-          ))}
+            ))}
+          </div>
+          <div className="mt-6 rounded-xl bg-white shadow-sm">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              isLoading={loading}
+            />
+          </div>
         </div>
       )}
     </div>

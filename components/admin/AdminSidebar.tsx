@@ -44,24 +44,27 @@ const AdminSidebar = () => {
     <>
       {/* Mobile menu button */}
       <button
+        type="button"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-[#111111] text-white rounded-lg lg:hidden"
+        aria-label={isSidebarOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+        aria-expanded={isSidebarOpen}
+        className="fixed left-4 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-lg bg-[#111111] text-white shadow-lg lg:hidden"
       >
         {isSidebarOpen ? <FaTimes /> : <FaBars />}
       </button>
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-[#111111] text-white transform transition-transform duration-300 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[min(18rem,calc(100vw-1.5rem))] flex-col overflow-y-auto bg-[#111111] text-white transform transition-transform duration-300 lg:static lg:w-64 lg:shrink-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="p-6 flex items-center gap-3">
+        <div className="flex items-center gap-3 p-6">
           <img src="/logo-small.webp" alt="Adèle Délice" className="h-10" />
           <h1 className="text-xl font-bold">Adèle Délice</h1>
         </div>
 
-        <nav className="mt-6">
+        <nav className="mt-2 flex-1 pb-24">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;

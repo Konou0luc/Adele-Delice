@@ -7,12 +7,16 @@ import Link from 'next/link';
 import { FaPlus, FaEdit, FaEye, FaTrash } from 'react-icons/fa';
 import { notify } from '@/lib/toast';
 import { getErrorMessage } from '@/lib/api-error';
+import Pagination from '@/components/admin/Pagination';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function CategoriesPage() {
   const { data: session } = useSession();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchCategories();
@@ -50,6 +54,12 @@ export default function CategoriesPage() {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedCategories = categories.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -60,14 +70,14 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#111111]">Catégories</h1>
           <p className="text-[#787774] mt-2">Gérez les catégories de plats</p>
         </div>
         <Link
           href="/admin/categories/new"
-          className="flex items-center gap-2 px-4 py-2 bg-[#111111] text-white rounded-lg hover:bg-[#333333] transition-colors"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#111111] px-4 py-2 text-white transition-colors hover:bg-[#333333] sm:w-auto"
         >
           <FaPlus />
           Ajouter une catégorie
@@ -86,7 +96,7 @@ export default function CategoriesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {categories.map((category) => (
+              {paginatedCategories.map((category) => (
                 <tr key={category.id} className="hover:bg-[#F7F6F3] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -143,6 +153,12 @@ export default function CategoriesPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          isLoading={loading}
+        />
       </div>
     </div>
   );

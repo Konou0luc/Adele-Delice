@@ -16,11 +16,11 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="admin-shell min-h-screen bg-[#F7F6F3] font-montserrat">
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen min-w-0">
         <AdminSidebar />
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <AdminTopbar />
-          <main className="flex-1 p-6 lg:p-8 overflow-auto">
+          <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
             {children}
           </main>
         </div>
