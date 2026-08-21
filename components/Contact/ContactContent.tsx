@@ -10,6 +10,7 @@ const ContactContent = () => {
     subject: '',
     message: ''
   })
+  const [gozemError, setGozemError] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -24,6 +25,25 @@ const ContactContent = () => {
     console.log('Form submitted:', formData)
     alert('Merci pour votre message ! Nous vous répondrons bientôt.')
     setFormData({ name: '', email: '', subject: '', message: '' })
+  }
+
+  const handleGozemClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    setGozemError(false)
+
+    const appCheckTimer = window.setTimeout(() => {
+      if (document.visibilityState === 'visible') {
+        setGozemError(true)
+      }
+    }, 1200)
+
+    const cancelFallback = () => {
+      window.clearTimeout(appCheckTimer)
+      document.removeEventListener('visibilitychange', cancelFallback)
+    }
+
+    document.addEventListener('visibilitychange', cancelFallback)
+    window.location.href = 'gozem://'
   }
 
   return (
@@ -177,14 +197,38 @@ const ContactContent = () => {
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         ></iframe>
-        <a
-          href="https://maps.app.goo.gl/UqkjyaTRKZUPKeW26?g_st=aw"
-          target="_blank"
-          rel="noreferrer"
-          className="block px-6 py-4 text-center font-semibold text-[#111111] hover:bg-[#F7F6F3] transition-colors"
-        >
-          Ouvrir dans Google Maps
-        </a>
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
+          <a
+            href="https://maps.app.goo.gl/UqkjyaTRKZUPKeW26?g_st=aw"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-center gap-3 rounded-lg bg-[#F7F6F3] px-4 py-3 text-center font-semibold text-[#111111] transition-colors hover:bg-[#EAEAEA]"
+          >
+            <img
+              src="/map.png"
+              alt="Logo Google Maps"
+              className="h-7 w-7 rounded-md object-contain"
+            />
+            Ouvrir dans Google Maps
+          </a>
+          <a
+            href="gozem://"
+            onClick={handleGozemClick}
+            className="flex items-center justify-center gap-3 rounded-lg bg-[#F7F6F3] px-4 py-3 text-center font-semibold text-[#111111] transition-colors hover:bg-[#EAEAEA]"
+          >
+            <img
+              src="/images.png"
+              alt="Logo Gozem"
+              className="h-7 w-7 rounded-md object-contain"
+            />
+            Ouvrir avec Gozem
+          </a>
+        </div>
+        {gozemError && (
+          <p className="px-4 pb-4 text-center text-sm font-medium text-red-600">
+            Impossible d&apos;ouvrir Gozem : application non trouvée.
+          </p>
+        )}
       </div>
     </div>
   )
