@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Blog culinaire",
+  description:
+    "Retrouvez les actualités, conseils et inspirations culinaires d'Adèle Délice à Lomé.",
+};
+
+export default function BlogLayout({ children }: { children: React.ReactNode }) {
+  return children;
+}

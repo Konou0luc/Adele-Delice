@@ -17,8 +17,60 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Adèle Délice - Restaurant",
-  description: "Mangez comme si vous êtes à la maison.",
+  metadataBase: new URL("https://adele-delice.vercel.app"),
+  title: {
+    default: "Adèle Délice | Restaurant à Lomé",
+    template: "%s | Adèle Délice",
+  },
+  description:
+    "Adèle Délice, restaurant à Lomé : découvrez notre cuisine familiale, nos plats faits maison et réservez votre table en ligne.",
+  applicationName: "Adèle Délice",
+  keywords: [
+    "restaurant Lomé",
+    "restaurant au Togo",
+    "cuisine familiale",
+    "plats faits maison",
+    "Adèle Délice",
+  ],
+  authors: [{ name: "Adèle Délice" }],
+  creator: "Adèle Délice",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: "/",
+    siteName: "Adèle Délice",
+    title: "Adèle Délice | Restaurant à Lomé",
+    description:
+      "Cuisine familiale et plats faits maison à Lomé. Découvrez notre menu et réservez votre table.",
+    images: [
+      {
+        url: "/logo-small.webp",
+        width: 1200,
+        height: 1200,
+        alt: "Logo Adèle Délice",
+      },
+      {
+        url: "/Gallery/interior-shot-cafe-with-chairs-near-bar-with-wooden-tables.webp",
+        width: 1200,
+        height: 800,
+        alt: "Salle du restaurant Adèle Délice",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Adèle Délice | Restaurant à Lomé",
+    description:
+      "Cuisine familiale et plats faits maison à Lomé.",
+    images: ["/logo-small.webp"],
+  },
+  icons: {
+    icon: "/logo-small.webp",
+    apple: "/logo-small.webp",
+  },
   manifest: "/manifest.json",
 };
 

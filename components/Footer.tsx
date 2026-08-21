@@ -31,11 +31,18 @@ const Footer = () => {
             <ul className="space-y-3 text-gray-300">
               <li className="flex items-center gap-3">
                 <FaMapMarkerAlt />
-                <span>123 Rue des Délices, Dakar, Sénégal</span>
+                <a
+                  href="https://maps.app.goo.gl/UqkjyaTRKZUPKeW26?g_st=aw"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Lomé, Togo
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <FaPhone />
-                <a href="tel:+22112345678" className="hover:text-white transition-colors">+221 12 345 6789</a>
+                <a href="tel:+22898507226" className="hover:text-white transition-colors">+228 98 50 72 26</a>
               </li>
               <li className="flex items-center gap-3">
                 <FaEnvelope />

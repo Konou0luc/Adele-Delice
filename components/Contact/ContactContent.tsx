@@ -39,8 +39,14 @@ const ContactContent = () => {
               <h3 className="text-xl font-bold text-[#111111]">Adresse</h3>
             </div>
             <p className="text-[#787774]">
-              123 Rue des Délices,<br />
-              Dakar, Sénégal
+              <a
+                href="https://maps.app.goo.gl/UqkjyaTRKZUPKeW26?g_st=aw"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-[#111111] transition-colors"
+              >
+                Lomé, Togo
+              </a>
             </p>
           </div>
 
@@ -52,7 +58,7 @@ const ContactContent = () => {
               <h3 className="text-xl font-bold text-[#111111]">Téléphone</h3>
             </div>
             <p className="text-[#787774]">
-              <a href="tel:+22112345678" className="hover:text-[#111111] transition-colors">+221 12 345 6789</a>
+              <a href="tel:+22898507226" className="hover:text-[#111111] transition-colors">+228 98 50 72 26</a>
             </p>
           </div>
 
@@ -164,13 +170,21 @@ const ContactContent = () => {
       <div className="bg-white rounded-xl border border-[#EAEAEA] overflow-hidden hover:shadow-lg transition-shadow">
         <iframe
           title="Localisation Adèle Délice"
-          src="https://www.openstreetmap.org/export/embed.html?bbox=-17.4677%2C14.6928%2C-17.4277%2C14.7128&layer=mapnik&marker=14.7028%2C-17.4477"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=1.176032%2C6.1797056%2C1.216032%2C6.2197056&layer=mapnik&marker=6.1997056%2C1.196032"
           width="100%"
           height="400"
           className="border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         ></iframe>
+        <a
+          href="https://maps.app.goo.gl/UqkjyaTRKZUPKeW26?g_st=aw"
+          target="_blank"
+          rel="noreferrer"
+          className="block px-6 py-4 text-center font-semibold text-[#111111] hover:bg-[#F7F6F3] transition-colors"
+        >
+          Ouvrir dans Google Maps
+        </a>
       </div>
     </div>
   )
